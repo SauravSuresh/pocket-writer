@@ -24,5 +24,6 @@ export const COPY = {
   inbox: { newIssue: "＋ New issue", newIssueFrom: (g: string) => `＋ New issue from what ${g} said`, newFree: "＋ Issue without feedback", link: "…or link an existing issue", unaccounted: "unaccounted", selectHint: "Or select an item on the left to extract an issue from it / link it to an existing one." },
   badges: { cameBack: "Came back", stillBothers: "Still bothers them" },
   summary: { title: (n: number) => `Draft ${n} — turn over`, backup: "Download backup", nextDraft: "Start next draft", reopen: "Reopen draft" },
+  draftHome: { room: "The room", noSessions: "No sessions yet. Add one when the room has spoken." },
   nag: "It's been a week since your last backup. Browser storage is not a vault.",
 };

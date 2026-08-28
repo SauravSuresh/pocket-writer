@@ -24,14 +24,14 @@ export function DraftHome({ pid, did }: { pid: string; did: string }) {
         {d.frozen && !p.drafts.some(x => !x.frozen) && <button class="pri" onClick={() => store.update(() => { const n = startDraft(p); go(`/p/${pid}/d/${n.id}`); })}>{COPY.summary.nextDraft}</button>}
       </div>
       <div class="card" style="margin-bottom:12px">
-        <div class="row"><b class="grow">The room</b><button class="sm" onClick={() => { const n = prompt("Giver name?"); if (n?.trim()) store.update(() => addGiver(p, n)); }}>＋ giver</button></div>
+        <div class="row"><b class="grow">{COPY.draftHome.room}</b><button class="sm" onClick={() => { const n = prompt("Giver name?"); if (n?.trim()) store.update(() => addGiver(p, n)); }}>＋ giver</button></div>
         <div class="mut">{p.givers.map(g => g.name).join(", ") || "nobody yet"}</div>
       </div>
       <div class="card">
         <div class="row"><b class="grow">Feedback sessions</b>{!d.frozen && <button class="sm pri" onClick={newSession}>＋ session</button>}</div>
         {sessions.map(s => { const items = p.items.filter(i => i.sessionId === s.id); const un = items.filter(i => !i.issueIds.length).length;
           return <div class="minion" style="cursor:pointer" onClick={() => go(`/p/${pid}/d/${did}/s/${s.id}`)}><span class="grow">{s.date} · {items.length} items</span>{un > 0 && <span class="badge">{un} {COPY.inbox.unaccounted}</span>}</div>; })}
-        {!sessions.length && <div class="mut" style="margin-top:6px">No sessions yet. Add one when the room has spoken.</div>}
+        {!sessions.length && <div class="mut" style="margin-top:6px">{COPY.draftHome.noSessions}</div>}
       </div>
     </main>
   </>;
