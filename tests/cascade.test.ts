@@ -13,7 +13,7 @@ describe("cascade", () => {
     const iss = clone(); const boss = iss.find(i => i.id === "3")!; boss.solution = "We laugh at identity.";
     answerCascade(iss, "3", "9", "full");
     const m = iss.find(i => i.id === "9")!;
-    expect(m.solution).toBe("Covered by \"What are we laughing at in this film\"");
+    expect(m.solution).toBe("Covered by “What are we laughing at in this film”");
     expect(m.coveredBy).toBe("3"); expect(status(m)).toBe("Planned");
     expect(cascadeQueue(iss, "3").map(i => i.id)).toEqual(["10"]);
   });
