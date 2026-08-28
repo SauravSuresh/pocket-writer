@@ -5,6 +5,7 @@ import { Projects } from "./screens/Projects";
 import { DraftHome } from "./screens/DraftHome";
 import { Session } from "./screens/Session";
 import { Campaign } from "./screens/Campaign";
+import { Ideas } from "./screens/Ideas";
 export function App() {
   useStore(); const r = useRoute();
   useEffect(() => { void store.init(); }, []);
@@ -18,6 +19,7 @@ export function App() {
     case "draft": return <DraftHome pid={r.pid!} did={r.did!} />;
     case "session": return <Session pid={r.pid!} did={r.did!} sid={r.sid!} />;
     case "campaign": return <Campaign pid={r.pid!} did={r.did!} />;
+    case "ideas": return <Ideas pid={r.pid!} />;
     default: return <Projects />;
   }
 }

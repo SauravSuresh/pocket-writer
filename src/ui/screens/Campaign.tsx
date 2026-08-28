@@ -8,12 +8,14 @@ import { IssueEditor } from "../IssueEditor";
 import { COPY } from "../copy";
 import { actionOrder, draftIssues, minions } from "../../domain/graph";
 import { status, severity } from "../../domain/issue";
-import { createIssue, endTurn } from "../../domain/account";
+import { createIssue, createDeeperIssue, endTurn } from "../../domain/account";
 import { CascadeModal } from "../Cascade";
 import { BossDownCard, RankUpCard } from "../Cards";
 import { chime } from "../sound";
 import { affinity } from "../../domain/affinity";
 import { cascadeQueue } from "../../domain/cascade";
+import { giverPatternNudges } from "../../domain/nudges";
+import { GiverPanel } from "../GiverPanel";
 export function Campaign({ pid, did }: { pid: string; did: string }) {
   const acc = useStore(); const p = acc.projects.find(x => x.id === pid)!; const d = p.drafts.find(x => x.id === did)!;
   const issues = draftIssues(p, did); const order = actionOrder(issues, p.tagWeights);
@@ -38,6 +40,9 @@ export function Campaign({ pid, did }: { pid: string; did: string }) {
     <Header title={`${p.name} · Draft ${d.number} · Campaign`} right={<><button class="sm" onClick={() => go(`/p/${pid}/d/${did}`)}>← draft</button><Meters p={p} draftId={did} /></>} />
     <main>
       <Audience p={p} draftId={did} onPick={setGiver} />
+      {giverPatternNudges(p, did).map(n => { const g = p.givers.find(x => x.id === n.giverId)!; return <div class="n2" style="margin-bottom:12px"><b>{COPY.n4(g.name, n.issueIds.length)}</b> {n.issueIds.map(id => <span class="issue-chip">{issues.find(x => x.id === id)?.title}</span>)}
+        {!d.frozen && <button class="sm" onClick={() => { const t = prompt("Title of the deeper issue that causes all of these?"); if (t?.trim()) store.update(() => { const deep = createDeeperIssue(p, did, t, n.issueIds); setSel(deep.id); }); }}>create a deeper issue</button>}
+        {!d.frozen && <button class="sm" onClick={() => store.update(() => { d.dismissedN4.push(n.giverId); })}>they're separate</button>}</div>; })}
       <div class="enc">
         <div class="rail"><div class="tag" style="margin-bottom:6px">ACTION ORDER — enforced</div>
           {order.map((x, n) => <div class={`it ${x.isRoot ? "" : "sym"} ${i.id === x.id ? "sel" : ""}`} onClick={() => setSel(x.id)}><span class="num">{n + 1}</span><span class="grow">{x.isRoot ? "★ " : ""}{x.title}</span><span class={`st ${status(x)}`}>{x.coveredBy ? "cov" : status(x)[0]}</span></div>)}
@@ -55,7 +60,7 @@ export function Campaign({ pid, did }: { pid: string; did: string }) {
         </div>
       </div>
     </main>
-    {giver && <div id="giver-panel-slot" data-giver={giver} onClick={() => setGiver(null)} />}{/* Task 18 renders the panel here */}
+    {giver && <GiverPanel p={p} draftId={did} giverId={giver} onClose={() => setGiver(null)} />}
     {cascade && <CascadeModal p={p} bossId={cascade} onDone={fell => { setCascade(null); setCard({ type: "boss", bossId: cascade, fell }); chime("boss"); }} />}
     {card?.type === "boss" && <BossDownCard p={p} bossId={card.bossId} fell={card.fell} onClose={() => { setCard(null); checkRankUps(pendingBefore); }} />}
     {card?.type === "rank" && <RankUpCard p={p} giverId={card.giverId} rank={card.rank} quote={card.quote} onClose={() => setCard(null)} />}
