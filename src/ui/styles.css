@@ -3,11 +3,15 @@
 body { margin:0; font:15px/1.45 -apple-system,"Inter",system-ui,sans-serif; color:var(--ink); background:var(--bg); padding-bottom:90px; }
 header { padding:12px 24px; border-bottom:1px solid var(--line); background:var(--card); display:flex; gap:18px; align-items:center; }
 header h1 { font-size:16px; margin:0; font-weight:600; }
+.meters { margin-left:auto; display:flex; gap:16px; font-size:13px; }
+.meters span b { font-variant-numeric:tabular-nums; }
+.bar { display:inline-block; width:70px; height:6px; background:#eee9df; border-radius:3px; vertical-align:middle; margin-left:4px; overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--ok); }
 main { padding:18px 24px; }
 button { font:inherit; cursor:pointer; border:1px solid var(--line); background:var(--card); border-radius:6px; padding:5px 11px; color:var(--ink); }
 button.pri { background:var(--acc); border-color:var(--acc); color:#fff; }
 button.sm { font-size:12px; padding:2px 8px; }
-textarea, input { font:inherit; border:1px solid var(--line); border-radius:6px; padding:8px; width:100%; background:#fff; color:var(--ink); }
+input, textarea, select { font:inherit; border:1px solid var(--line); border-radius:6px; padding:8px; width:100%; background:#fff; color:var(--ink); }
 textarea { min-height:110px; resize:vertical; }
 .mut { color:var(--mut); } .tag { font-size:11px; color:var(--mut); }
 .row { display:flex; gap:8px; align-items:center; } .grow { flex:1; }
