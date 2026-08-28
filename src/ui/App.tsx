@@ -8,7 +8,9 @@ import { Campaign } from "./screens/Campaign";
 import { Ideas } from "./screens/Ideas";
 import { Summary } from "./screens/Summary";
 import { Settings } from "./screens/Settings";
+import { How } from "./screens/How";
 import { Nag } from "./Nag";
+import { Tour } from "./Tour";
 export function App() {
   useStore(); const r = useRoute();
   useEffect(() => { void store.init(); }, []);
@@ -26,8 +28,9 @@ export function App() {
       case "ideas": return <Ideas pid={r.pid!} />;
       case "summary": return <Summary pid={r.pid!} did={r.did!} />;
       case "settings": return <Settings />;
+      case "how": return <How />;
       default: return <Projects />;
     }
   })();
-  return <><Nag />{screen}</>;
+  return <><Nag />{screen}{r.name !== "how" && <Tour />}</>;
 }
