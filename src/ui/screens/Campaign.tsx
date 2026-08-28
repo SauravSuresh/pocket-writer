@@ -13,6 +13,7 @@ import { CascadeModal } from "../Cascade";
 import { BossDownCard, RankUpCard } from "../Cards";
 import { chime } from "../sound";
 import { affinity } from "../../domain/affinity";
+import { cascadeQueue } from "../../domain/cascade";
 export function Campaign({ pid, did }: { pid: string; did: string }) {
   const acc = useStore(); const p = acc.projects.find(x => x.id === pid)!; const d = p.drafts.find(x => x.id === did)!;
   const issues = draftIssues(p, did); const order = actionOrder(issues, p.tagWeights);
@@ -28,9 +29,8 @@ export function Campaign({ pid, did }: { pid: string; did: string }) {
       const q = p.items.find(it => it.draftId === did && it.giverId === g.id && it.issueIds.length && it.issueIds.every(id => status(p.issues.find(x => x.id === id)!) === "Planned"))?.text ?? "";
       setCard({ type: "rank", giverId: g.id, rank: a.rank, quote: q }); chime("rank"); return; } }
   };
-  const cascadeQueueLen = (bossId: string) => minions(issues, bossId).filter(m => !m.cascadeAnswers[bossId]).length;
   const onSaved = (kind: "boss" | "symptom", before: Record<string, number>) => {
-    if (kind === "boss" && cascadeQueueLen(i.id) > 0) { setPendingBefore(before); setCascade(i.id); }
+    if (kind === "boss" && cascadeQueue(issues, i.id).length > 0) { setPendingBefore(before); setCascade(i.id); }
     else checkRankUps(before);
   };
   if (!i) return <><Header title={`${p.name} · Draft ${d.number} · Campaign`} /><main class="mut">No issues yet. {!d.frozen && <button onClick={() => store.update(() => { const n = createIssue(p, did, prompt("Issue title?") ?? "Untitled"); setSel(n.id); })}>＋ issue</button>}</main></>;
