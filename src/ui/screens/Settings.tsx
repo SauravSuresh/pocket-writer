@@ -16,6 +16,6 @@ export function Settings() {
     {acc.projects.map(p => <div class="card" style="margin-top:12px"><b>{p.name}</b>
       <div class="row" style="margin-top:6px"><button class="sm" onClick={() => downloadZip(`${p.name}-obsidian.zip`, obsidianFiles(p))}>Export for Obsidian (.zip)</button></div>
       <div class="tag" style="margin-top:8px">Tag weights</div>
-      <div class="row" style="flex-wrap:wrap">{TAGS.map(t => <label class="tag">{t} <input type="number" style="width:52px" value={p.tagWeights[t]} onChange={e => store.update(() => { p.tagWeights[t] = Number((e.target as HTMLInputElement).value) || 0; })} /></label>)}</div></div>)}
+      <div class="row" style="flex-wrap:wrap">{TAGS.map(t => <label class="tag">{t} <input type="number" style="width:52px" value={p.tagWeights[t]} onBlur={e => { const n = Number((e.target as HTMLInputElement).value); if (Number.isFinite(n) && (e.target as HTMLInputElement).value !== "") store.update(() => { p.tagWeights[t] = n; }); else (e.target as HTMLInputElement).value = String(p.tagWeights[t]); }} /></label>)}</div></div>)}
   </main></>;
 }

@@ -10,7 +10,7 @@ import { chime } from "../sound";
 import { toast } from "../toast";
 export function Summary({ pid, did }: { pid: string; did: string }) {
   const acc = useStore(); const p = acc.projects.find(x => x.id === pid)!; const d = p.drafts.find(x => x.id === did)!; const s = d.summary;
-  useEffect(() => { chime("turn"); if (s) download(actionPlanFilename(p, d), actionPlanMarkdown(p, did), "text/markdown"); }, []);
+  useEffect(() => { if (s) { chime("turn"); download(actionPlanFilename(p, d), actionPlanMarkdown(p, did), "text/markdown"); } }, []);
   if (!s) { go(`/p/${pid}/d/${did}`); return null; }
   const t = (id: string) => p.issues.find(i => i.id === id)?.title;
   return <><Header title={`${p.name} · Draft ${d.number}`} /><main style="max-width:760px">
