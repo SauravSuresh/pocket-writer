@@ -15,7 +15,7 @@ export function IssueEditor({ p, issue, onSaved, frozen, onBeforeSave }: { p: Pr
   const set = (fn: (i: Issue) => void) => { if (frozen) return; store.update(() => { fn(issue); touch(p, issue); }); };
   const suggestions = p.items.filter(it => it.kind === "suggestion" && it.issueIds.includes(issue.id));
   const ideas = p.ideas.filter(i => i.issueIds.includes(issue.id));
-  const save = () => { if (!draft.trim()) return; const before = onBeforeSave?.() ?? {}; set(i => {
+  const save = () => { if (!draft.trim()) return alert("Write a plan first."); const before = onBeforeSave?.() ?? {}; set(i => {
     i.solution = draft.trim();
     if (i.coveredBy && i.solution !== `Covered by “${issues.find(x => x.id === i.coveredBy)?.title}”`) i.coveredBy = undefined;
     if (i.partialOf) i.partialOf = undefined;
