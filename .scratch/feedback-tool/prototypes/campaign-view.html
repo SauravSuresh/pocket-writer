@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PROTOTYPE — campaign view (3 variants)</title>
+<!-- Three variants of the Action Order / campaign screen, switchable via ?variant=A|B|C. Throwaway. -->
+<style>
+  :root { --ink:#1c1b19; --mut:#7a766e; --line:#e2ded6; --bg:#faf8f4; --card:#fff; --acc:#b5461d; --ok:#2e7d4f; --warn:#c98a12; --boss:#3b2a5a; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.45 -apple-system,"Inter",system-ui,sans-serif; color:var(--ink); background:var(--bg); padding-bottom:90px; }
+  header { padding:12px 24px; border-bottom:1px solid var(--line); background:var(--card); display:flex; gap:18px; align-items:center; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  .meters { margin-left:auto; display:flex; gap:16px; font-size:13px; }
+  .meters span b { font-variant-numeric:tabular-nums; }
+  .bar { display:inline-block; width:70px; height:6px; background:#eee9df; border-radius:3px; vertical-align:middle; margin-left:4px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--ok); }
+  main { padding:18px 24px; }
+  button { font:inherit; cursor:pointer; border:1px solid var(--line); background:var(--card); border-radius:6px; padding:5px 11px; color:var(--ink); }
+  button.pri { background:var(--acc); border-color:var(--acc); color:#fff; }
+  button.sm { font-size:12px; padding:2px 8px; }
+  textarea, input { font:inherit; border:1px solid var(--line); border-radius:6px; padding:8px; width:100%; background:#fff; color:var(--ink); }
+  textarea { min-height:110px; resize:vertical; }
+  .mut { color:var(--mut); } .tag { font-size:11px; color:var(--mut); }
+  .row { display:flex; gap:8px; align-items:center; } .grow { flex:1; }
+  .st { font-size:11px; border-radius:4px; padding:1px 6px; color:#fff; background:#999; }
+  .st.Raw{background:#b7b2a8}.st.Captured{background:#c98a12}.st.Assessed{background:#2b5a86}.st.Planned{background:var(--ok)}
+  .lvl { font-size:11px; font-weight:700; color:var(--boss); border:1px solid var(--boss); border-radius:4px; padding:0 5px; }
+  .missing { font-size:12px; color:var(--acc); }
+  .quote { border-left:3px solid var(--acc); padding:6px 10px; background:#f5efe6; font-style:italic; font-size:14px; margin:6px 0; }
+  .sugg { border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-bottom:6px; font-size:14px; background:#fff; }
+  .sugg .row { justify-content:space-between; }
+  .idea { border-left:3px solid #7aa; padding:4px 8px; font-size:13px; margin:4px 0; background:#eef6f6; }
+  .card { border:1px solid var(--line); background:var(--card); border-radius:10px; padding:14px; }
+  .boss { border-color:var(--boss); border-width:2px; }
+  .boss h3 { margin:0; font-size:16px; }
+  .minion { padding:8px 10px; border-top:1px solid #f0ece4; font-size:14px; display:flex; gap:8px; align-items:center; }
+  .minion.covered { color:var(--mut); text-decoration:line-through; }
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:8; }
+  .modal { background:#fff; border-radius:12px; padding:22px; width:600px; max-height:85vh; overflow:auto; }
+  .cleared { text-align:center; background:linear-gradient(160deg,#3b2a5a,#b5461d); color:#fff; }
+  .cleared h2 { margin:0 0 6px; font-size:28px; }
+  .rankcard { text-align:center; background:linear-gradient(160deg,#2e7d4f,#2b5a86); color:#fff; }
+  .state { position:fixed; right:0; top:0; bottom:70px; width:250px; background:#111; color:#ddd; font:12px/1.4 ui-monospace,monospace; padding:12px; overflow:auto; }
+  .state h5 { margin:0 0 6px; color:#fff; } .state .r{color:#f39a7a} .state .g{color:#8fd19e} .state .y{color:#f3c66d}
+  .switcher { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:#111; color:#fff; border-radius:999px; padding:8px 14px; display:flex; gap:14px; align-items:center; box-shadow:0 6px 24px rgba(0,0,0,.25); z-index:9; }
+  .switcher button { background:transparent; color:#fff; border:none; font-size:18px; padding:0 6px; }
+  /* A */
+  .campaign { max-width:900px; display:flex; flex-direction:column; gap:12px; }
+  .campaign .card.sel { box-shadow:0 0 0 3px #f1d9cc; }
+  .editor { border-top:1px dashed var(--line); margin-top:10px; padding-top:10px; display:grid; grid-template-columns:1fr 280px; gap:14px; }
+  /* B */
+  .enc { display:grid; grid-template-columns:260px 1fr 300px; gap:16px; min-height:70vh; }
+  .rail .it { padding:7px 9px; border-radius:6px; cursor:pointer; font-size:13px; display:flex; gap:6px; align-items:center; }
+  .rail .it.sel { background:#fff; border:1px solid var(--acc); }
+  .rail .it.sym { padding-left:24px; }
+  .rail .it .num { color:var(--mut); width:18px; text-align:right; }
+  .focus { }
+  .focus h2 { margin:0 0 4px; font-size:22px; }
+  .ctx .card { margin-bottom:12px; }
+  /* C */
+  .graph { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .depth h4 { margin:0 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); }
+  .node { border:1px solid var(--line); background:#fff; border-radius:8px; padding:8px 10px; margin-bottom:8px; cursor:pointer; font-size:14px; }
+  .node.root { border-color:var(--boss); border-width:2px; }
+  .node.sel { box-shadow:0 0 0 3px #f1d9cc; }
+  .node.lit { background:#fff7ef; }
+  .node small { display:block; color:var(--mut); }
+  /* audience strip (B) */
+  .audience { display:flex; gap:10px; margin-bottom:14px; }
+  .aud { flex:1; background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 10px; cursor:pointer; transition:transform .25s; }
+  .aud:hover { transform:translateY(-2px); }
+  .aud .face { font-size:26px; line-height:1; transition:transform .3s; display:inline-block; }
+  .aud.bump .face { animation:bump .6s; }
+  @keyframes bump { 0%{transform:scale(1)} 40%{transform:scale(1.5) rotate(-8deg)} 100%{transform:scale(1)} }
+  .aud .nm { font-weight:600; font-size:13px; }
+  .aud .rk { font-size:11px; color:var(--mut); }
+  .aud .bar { width:100%; margin:6px 0 0; height:7px; }
+  .aud .bar i { transition:width .8s cubic-bezier(.2,.8,.2,1); background:linear-gradient(90deg,#c98a12,#2e7d4f); }
+  .aud .say { font-size:11px; color:var(--acc); margin-top:4px; min-height:14px; font-style:italic; }
+  /* giver panel */
+  .gpanel { position:fixed; top:0; right:250px; bottom:0; width:340px; background:#fff; border-left:1px solid var(--line); padding:18px; overflow:auto; z-index:7; box-shadow:-8px 0 24px rgba(0,0,0,.08); }
+  .rank { font-size:20px; font-weight:700; }
+  .hearts { letter-spacing:2px; color:var(--acc); }
+  .gitem { border-top:1px solid #f0ece4; padding:8px 0; font-size:13px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="state" id="state"></div>
+<div class="switcher"><button onclick="cycle(-1)">←</button><span id="vlabel"></span><button onclick="cycle(1)">→</button></div>
+<script>
+// ---------- seed: real V3 issue graph (subset) ----------
+const W = {Theme:9,Tone:8,Character:7,Arc:6,Structure:5,Exposition:4,Logic:3,Scene:2,Dialogue:1};
+let issues = [
+  {id:1, title:"Too many ideas lessening the intensity of one idea", tags:["Structure","Theme"], root:true, causedBy:[], needsAction:"yes", solution:"", covered:null},
+  {id:2, title:"Lack of Focused setup", tags:["Structure"], root:true, causedBy:[], needsAction:"yes", solution:"", covered:null},
+  {id:3, title:"What are we laughing at in this film", tags:["Theme"], root:true, causedBy:[], needsAction:"yes", solution:"We laugh at how stupid they are due to attachment to their identities; at how desperate and confused they get when they don't understand Shaji.", covered:null},
+  {id:4, title:"The ghosts problem", tags:["Theme","Character","Logic"], root:true, causedBy:[], needsAction:"yes", solution:"", covered:null},
+  {id:5, title:"Perspective and who is this story about", tags:["Structure","Theme"], root:false, causedBy:[2], needsAction:"yes", solution:"", covered:null},
+  {id:6, title:"The anto problem", tags:["Character","Structure"], root:false, causedBy:[2,5], needsAction:"yes", solution:"", covered:null},
+  {id:7, title:"Anto was searching is not clear", tags:["Character","Arc","Structure"], root:false, causedBy:[2,1], needsAction:"yes", solution:"", covered:null},
+  {id:8, title:"Too many characters", tags:["Character","Arc"], root:false, causedBy:[1,5], needsAction:"no", solution:"", covered:null},
+  {id:9, title:"Bobbing heads", tags:["Tone"], root:false, causedBy:[3], needsAction:"yes", solution:"", covered:null},
+  {id:10, title:"The villain problem", tags:["Character","Tone"], root:false, causedBy:[3], needsAction:"yes", solution:"", covered:null},
+  {id:11, title:"Should shaji be mythified", tags:["Character","Theme"], root:false, causedBy:[4], needsAction:"yes", solution:"", covered:null},
+  {id:12, title:"Main conflict only comes in by the 50th page", tags:["Structure"], root:false, causedBy:[9], needsAction:"no", solution:"", covered:null},
+  {id:13, title:"Risk in simon being seen with shaji", tags:["Logic"], root:true, causedBy:[], needsAction:"no", solution:"", covered:null},
+];
+const givers = {
+  Rohan:{items:[{t:"Too many ideas — every theme mentioned, none explored",iss:[1,8]},{t:"Perspective shifts every 5 mins — everyone is a protagonist",iss:[5]},{t:"Its lost in the noise that anto is searching for shaji",iss:[7]}]},
+  Akhil:{items:[{t:"First 10 min serious, then the bobbing heads — tone shift abrupt",iss:[9]},{t:"Main point only by page 50",iss:[12]},{t:"'Ivide varunath thanne risk aa' — enth risk?",iss:[13]},{t:"Show ghosts with real-world consequences",iss:[4],kind:"S"}]},
+  Hari:{items:[{t:"Why did Simon become a fool suddenly",iss:[10]},{t:"Cohle's line makes Shaji sound known for it but we never see it",iss:[4]},{t:"Why isn't anyone thinking this is mental illness?",iss:[4],kind:"S"}]},
+  Prabhav:{items:[{t:"Anton ithenthinte keda",iss:[6]},{t:"Randu pottanmar! ath enth resam arnu",iss:[11],kind:"S"}]},
+  Ren:{items:[{t:"Not enough scenes to sell the mythification",iss:[11]}]},
+};
+const suggestions = {4:[{g:"Akhil",t:"Show the ghosts having real-world consequences — Shaji says where they're going before it happens"},{g:"Hari",t:"Have someone in the story world ask whether this is mental illness"}],11:[{g:"Prabhav",t:"Bring back the two fools who worshipped him"}],2:[]};
+const ideas = {2:["Bring Alan back — people who don't know Shaji see him for what he is","Simon's speech: 'the world will not give you anything, snatch it' — Shaji repeats it to Anto later"],4:["Anto is the only one who says 'avanu praanthaan'"],11:["Quick-gun Shaji — the lighter draw as the gun draw"]};
+const RANKS = ["Walked out","Unconvinced","Watching","Nodding","Loves it"];
+const FACES = ["🚪","😤","👀","🙂","😍"];
+const SAY = {
+  0:["left. seat's still warm.","gone. popcorn abandoned."],
+  1:["arms crossed.","'this is the same film.'","checking phone."],
+  2:["hm.","leaning forward slightly.","'okay… go on.'"],
+  3:["nodding. slowly.","'oh that's nice.'","stopped checking phone."],
+  4:["'I TOLD you it would work.'","already casting it.","crying (good)."],
+};
+let lastRank = {};
+
+// ---------- derived ----------
+const sev = i => i.tags.length ? Math.max(...i.tags.map(t=>W[t])) + (i.tags.length-1) : 0;
+const byId = id => issues.find(i=>i.id===id);
+const minions = b => issues.filter(i=>i.causedBy.includes(b.id));
+const status = i => i.solution ? "Planned" : (i.tags.length && (i.root||i.causedBy.length)) ? "Assessed" : "Captured";
+const missing = i => i.solution ? "" : i.needsAction==="no" ? "Unarmed. Say what you *would* do, then why you won't." : "Unarmed. Write a plan.";
+function actionOrder(){ // topo by causedBy (roots first) → needsAction → fewer causes → severity
+  const indeg = new Map(issues.map(i=>[i.id, i.causedBy.length])); const out=[]; let q=issues.filter(i=>!i.causedBy.length);
+  const cmp=(a,b)=> (b.needsAction==="yes")-(a.needsAction==="yes") || a.causedBy.length-b.causedBy.length || sev(b)-sev(a);
+  while(q.length){ q.sort(cmp); const n=q.shift(); out.push(n); issues.filter(x=>x.causedBy.includes(n.id)).forEach(x=>{indeg.set(x.id,indeg.get(x.id)-1); if(indeg.get(x.id)===0) q.push(x);}); }
+  return out;
+}
+const bossCleared = b => !!b.solution && minions(b).every(m=>m.cascade && m.cascade[b.id]);
+function affinity(name){ const g=givers[name]; const planned=g.items.filter(it=>it.iss.every(id=>byId(id).solution)).length; const un=g.items.filter(it=>!it.iss.length).length; let r=1+Math.floor(3*planned/g.items.length); if(planned===g.items.length) r=4; return {rank:un?0:r, planned, total:g.items.length}; }
+const interest = n => { const a=affinity(n); return a.rank===0?0:Math.min(1,(a.planned/a.total)); };
+function audienceHTML(){ return `<div class="audience">${Object.keys(givers).map(n=>{ const a=affinity(n), bumped=lastRank[n]!==undefined&&lastRank[n]<a.rank; lastRank[n]=a.rank;
+  return `<div class="aud ${bumped?"bump":""}" onclick="ui.giver='${n}';render()"><div class="row"><span class="face">${FACES[a.rank]}</span><div><div class="nm">${n}</div><div class="rk">${RANKS[a.rank]} · ${a.planned}/${a.total}</div></div></div><span class="bar"><i style="width:${Math.round(100*interest(n))}%"></i></span><div class="say">${SAY[a.rank][(n.length+a.planned)%SAY[a.rank].length]}</div></div>`; }).join("")}</div>`; }
+const meters = () => ({planned:issues.filter(i=>i.solution).length, assessed:issues.filter(i=>status(i)!=="Captured").length, total:issues.length, bosses:issues.filter(i=>i.root&&bossCleared(i)).length, roots:issues.filter(i=>i.root).length});
+
+// ---------- ui ----------
+let ui = {sel: actionOrder()[0].id, giver:null, cascade:null, card:null, draft:""};
+function select(id){ ui.sel=id; ui.draft=byId(id).solution; render(); }
+function adopt(s){ ui.draft = (ui.draft?ui.draft+"\n":"") + s.t + `  — adopted from ${s.g}`; render(); }
+function savePlan(){ const i=byId(ui.sel); if(!ui.draft.trim()) return; const before=Object.fromEntries(Object.keys(givers).map(n=>[n,affinity(n).rank]));
+  i.solution=ui.draft.trim();
+  const ms = minions(i).filter(m=>!(m.cascade&&m.cascade[i.id]));
+  if(i.root && ms.length){ ui.cascade={boss:i.id, queue:ms.map(m=>m.id), fell:[]}; }
+  else afterPlan(before);
+  render(); }
+function afterPlan(before){ Object.keys(givers).forEach(n=>{ if(affinity(n).rank>before[n]) ui.card={type:"rank",g:n}; }); }
+function answerCascade(ans){ const c=ui.cascade, m=byId(c.queue.shift()); m.cascade=m.cascade||{}; m.cascade[c.boss]=ans;
+  if(ans==="full"){ m.solution=`Covered by “${byId(c.boss).title}”`; m.covered=c.boss; c.fell.push(m.id); }
+  if(ans==="partial"){ m.solution=""; m.partialOf=c.boss; }
+  if(!c.queue.length){ ui.card={type:"boss", boss:c.boss, fell:c.fell}; ui.cascade=null; }
+  render(); }
+function sugHTML(i){ const s=suggestions[i.id]||[]; return `<h4 style="margin:10px 0 6px;font-size:13px">Suggestions from the room</h4>${s.length?s.map(x=>`<div class="sugg"><div class="row"><span><b>${x.g}</b> · ${x.t}</span><button class="sm" onclick='adopt(${JSON.stringify(x)})'>adopt</button></div></div>`).join(""):`<div class="mut" style="font-size:13px">none</div>`}
+  <h4 style="margin:10px 0 6px;font-size:13px">Your ideas</h4>${(ideas[i.id]||[]).map(x=>`<div class="idea">${x}</div>`).join("")||`<div class="mut" style="font-size:13px">none linked</div>`}`; }
+function editorHTML(i){ return `<div><div class="row" style="margin-bottom:6px"><span class="st ${status(i)}">${status(i)}</span><span class="lvl">Lv ${sev(i)}</span><span class="tag">${i.tags.join(", ")}</span><span class="tag">· needs action: ${i.needsAction}</span>${i.partialOf?`<span class="tag">· partially covered by “${byId(i.partialOf).title}”</span>`:""}</div>
+  ${i.causedBy.length?`<div class="tag" style="margin-bottom:6px">symptom of: ${i.causedBy.map(c=>byId(c).title).join(" · ")}</div>`:""}
+  <textarea placeholder="${i.needsAction==="no"?"What would you do if you did fix it? Then why you're not.":"What will you change in the next draft?"}" oninput="ui.draft=this.value">${ui.draft}</textarea>
+  <div class="row" style="margin-top:8px"><span class="missing grow">${missing(i)}</span><button class="pri" onclick="savePlan()">${i.root?"⚔️ Swing at the boss":"Handle it"}</button></div></div>`; }
+const giverItems = () => Object.entries(givers).map(([n,g])=>{const a=affinity(n);return `<button class="sm" onclick="ui.giver='${n}';render()">${n} · ${RANKS[a.rank]}</button>`;}).join(" ");
+function giverPanel(){ if(!ui.giver) return ""; const n=ui.giver, g=givers[n], a=affinity(n);
+  return `<div class="gpanel"><div class="row"><h3 style="margin:0" class="grow">${n}</h3><button class="sm" onclick="ui.giver=null;render()">close</button></div>
+  <div class="rank">${RANKS[a.rank]}</div><div class="hearts">${"●".repeat(a.rank+1)}${"○".repeat(4-a.rank)}</div>
+  <div class="mut" style="font-size:13px">${a.planned}/${a.total} of what ${n} said is planned → next rank at ${Math.min(a.total,Math.ceil((a.rank)*a.total/3)+1)}/${a.total}</div>
+  <h4 style="margin:14px 0 4px;font-size:13px">Draft 2 · Jul 2025</h4>
+  ${g.items.map(it=>`<div class="gitem"><span class="tag">${it.kind==="S"?"suggestion":"reaction"}</span> ${it.t}<div>${it.iss.map(id=>`<span class="tag">→ ${byId(id).title} <span class="st ${status(byId(id))}">${status(byId(id))}</span></span>`).join("<br>")}</div></div>`).join("")}</div>`; }
+function modals(){ if(ui.cascade){ const c=ui.cascade, m=byId(c.queue[0]), b=byId(c.boss);
+    return `<div class="overlay"><div class="modal"><div class="tag">Cascade · ${c.fell.length+ (minions(b).length-c.queue.length-c.fell.length)} of ${minions(b).length} answered</div><h3 style="margin:6px 0">Does that swing also knock out this one?</h3>
+      <div class="card" style="margin:10px 0"><b>${m.title}</b> <span class="lvl">Lv ${sev(m)}</span><div class="tag">${m.tags.join(", ")}</div></div>
+      <div class="quote">${b.solution}</div>
+      <div class="row" style="justify-content:flex-end"><button onclick="answerCascade('no')">Nope, still standing</button><button onclick="answerCascade('partial')">Winged it</button><button class="pri" onclick="answerCascade('full')">💥 Down — mark covered</button></div></div></div>`; }
+  if(ui.card&&ui.card.type==="boss"){ const b=byId(ui.card.boss); return `<div class="overlay" onclick="ui.card=null;render()"><div class="modal cleared"><div class="tag" style="color:#fbd">💥 BOSS DOWN</div><h2>${b.title}</h2><div>${ui.card.fell.length?`Took these down with it: ${ui.card.fell.map(id=>byId(id).title).join(" · ")}`:"Minions survived. Rude. They stay in the order."}</div><div style="margin-top:14px;opacity:.8;font-size:13px">click to continue · 🔔</div></div></div>`; }
+  if(ui.card&&ui.card.type==="rank"){ const n=ui.card.g,a=affinity(n); return `<div class="overlay" onclick="ui.card=null;render()"><div class="modal rankcard"><div class="tag" style="color:#cfe">${FACES[a.rank]} INTEREST RISING</div><h2>${n} is now <i>${RANKS[a.rank]}</i></h2><div class="quote" style="color:#fff;background:rgba(255,255,255,.15);border-color:#fff">“${givers[n].items.find(it=>it.iss.every(id=>byId(id).solution))?.t||""}”</div></div></div>`; }
+  return ""; }
+
+// ---------- Variant A: campaign list ----------
+function VariantA(){ const order=actionOrder(); const shown=new Set(); let out=`<div class="campaign">`;
+  order.forEach((i,n)=>{ if(shown.has(i.id)) return;
+    if(i.root){ const ms=minions(i); out+=`<div class="card boss ${ui.sel===i.id?"sel":""}"><div class="row" onclick="select(${i.id})" style="cursor:pointer"><span class="tag">#${n+1}</span><span class="lvl">BOSS Lv ${sev(i)}</span><h3 class="grow">${i.title}</h3><span class="st ${status(i)}">${bossCleared(i)?"Cleared":status(i)}</span></div>
+      <div class="missing">${missing(i)}</div>
+      ${ms.map(m=>`<div class="minion ${m.covered===i.id?"covered":""}" onclick="select(${m.id})" style="cursor:pointer"><span class="tag">↳</span><span class="grow">${m.title}</span><span class="lvl">Lv ${sev(m)}</span><span class="st ${status(m)}">${status(m)}</span></div>`).join("")}
+      ${ui.sel===i.id?`<div class="editor">${editorHTML(i)}<div>${sugHTML(i)}</div></div>`:""}</div>`; shown.add(i.id); }
+    else { out+=`<div class="card ${ui.sel===i.id?"sel":""}"><div class="row" onclick="select(${i.id})" style="cursor:pointer"><span class="tag">#${n+1}</span><span class="grow">${i.title}</span><span class="lvl">Lv ${sev(i)}</span><span class="st ${status(i)}">${status(i)}</span></div><div class="missing">${missing(i)}</div>
+      ${ui.sel===i.id?`<div class="editor">${editorHTML(i)}<div>${sugHTML(i)}</div></div>`:""}</div>`; shown.add(i.id); } });
+  return out+`</div>`; }
+
+// ---------- Variant B: encounter (three-pane) ----------
+function VariantB(){ const order=actionOrder(), i=byId(ui.sel), idx=order.findIndex(x=>x.id===ui.sel);
+  const next = order.slice(idx+1).find(x=>!x.solution) || order.find(x=>!x.solution);
+  const rail = `<div class="rail"><div class="tag" style="margin-bottom:6px">ACTION ORDER — enforced</div>${order.map((x,n)=>`<div class="it ${x.root?"":"sym"} ${ui.sel===x.id?"sel":""}" onclick="select(${x.id})"><span class="num">${n+1}</span><span class="grow">${x.root?"★ ":""}${x.title}</span><span class="st ${status(x)}">${x.covered?"cov":status(x)[0]}</span></div>`).join("")}</div>`;
+  const focus = `<div class="focus"><div class="tag">${i.root?"⚔️ BOSS FIGHT":"👾 ENCOUNTER"} · #${idx+1} of ${order.length}${i.root?` · ${minions(i).length} minions behind it`:""}</div><h2>${i.title}</h2>${editorHTML(i)}
+    <div class="row" style="margin-top:14px"><span class="mut grow" style="font-size:13px">${next?`Up next: ${next.title}`:"Nothing left standing. End the turn."}</span>${next?`<button onclick="select(${next.id})">Who's next? →</button>`:`<button class="pri">🏁 End turn</button>`}</div></div>`;
+  const ctx = `<div class="ctx">${i.root?`<div class="card"><b>Minions</b> (${minions(i).length})${minions(i).map(m=>`<div class="minion ${m.covered===i.id?"covered":""}"><span class="grow">${m.title}</span><span class="st ${status(m)}">${status(m)}</span></div>`).join("")||"<div class='mut'>none</div>"}</div>`:`<div class="card"><b>Symptom of</b>${i.causedBy.map(c=>`<div class="minion" onclick="select(${c})" style="cursor:pointer">★ ${byId(c).title} <span class="st ${status(byId(c))}">${status(byId(c))}</span></div>`).join("")}</div>`}
+    <div class="card">${sugHTML(i)}</div></div>`;
+  return audienceHTML()+`<div class="enc">${rail}${focus}${ctx}</div>`; }
+
+// ---------- Variant C: cause map ----------
+function VariantC(){ const depth = i => i.root?0 : 1+Math.max(...i.causedBy.map(c=>depth(byId(c))));
+  const cols=[[],[],[]]; actionOrder().forEach(i=>cols[Math.min(2,depth(i))].push(i));
+  const sel=byId(ui.sel); const lit=new Set(sel.root?minions(sel).map(m=>m.id):sel.causedBy);
+  const g = cols.map((c,d)=>`<div class="depth"><h4>${["Bosses — root causes","Symptoms","Symptoms of symptoms"][d]}</h4>${c.map(i=>`<div class="node ${i.root?"root":""} ${ui.sel===i.id?"sel":""} ${lit.has(i.id)?"lit":""}" onclick="select(${i.id})">${i.title}<small>Lv ${sev(i)} · <span class="st ${status(i)}">${bossCleared(i)?"Cleared":status(i)}</span>${i.covered?" · covered":""}</small></div>`).join("")}</div>`).join("");
+  return `<div class="graph">${g}</div><div class="card" style="margin-top:16px"><div class="tag">SELECTED</div><h3 style="margin:2px 0 8px">${sel.title}</h3><div class="editor" style="border:0;margin:0;padding:0">${editorHTML(sel)}<div>${sugHTML(sel)}</div></div></div>`; }
+
+// ---------- switcher + render ----------
+const VARIANTS={A:["Campaign list — bosses with minions nested, editor inline",VariantA],B:["Encounter — order rail · one issue in focus · context",VariantB],C:["Cause map — roots→symptoms columns, editor below",VariantC]};
+function cur(){ return new URLSearchParams(location.search).get("variant")||"A"; }
+function cycle(d){ const k=Object.keys(VARIANTS), i=(k.indexOf(cur())+d+k.length)%k.length; history.replaceState(null,"",`?variant=${k[i]}`); render(); }
+document.addEventListener("keydown",e=>{ if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName)) return; if(e.key==="ArrowLeft")cycle(-1); if(e.key==="ArrowRight")cycle(1); });
+function render(){ const v=cur(), m=meters(); document.getElementById("vlabel").textContent=`${v} — ${VARIANTS[v][0]}`;
+  const bar=(a,b)=>`<span class="bar"><i style="width:${100*a/b}%"></i></span>`;
+  document.getElementById("app").innerHTML=`<header><h1>Draft 2 · Campaign</h1><span class="mut" style="font-size:13px">${cur()==="B"?"":giverItems()}</span>
+    <div class="meters"><span>Assessed <b>${m.assessed}/${m.total}</b>${bar(m.assessed,m.total)}</span><span>Planned <b>${m.planned}/${m.total}</b>${bar(m.planned,m.total)}</span><span>Bosses <b>${m.bosses}/${m.roots}</b>${bar(m.bosses,m.roots)}</span></div></header><main>${VARIANTS[v][1]()}</main>${giverPanel()}${modals()}`;
+  document.getElementById("state").innerHTML=`<h5>ACTION ORDER</h5>`+actionOrder().map((i,n)=>`<div>${n+1}. ${i.root?'<span class="r">★</span>':'&nbsp;&nbsp;'} ${i.title.slice(0,26)}… <span class="${i.solution?'g':'y'}">${i.covered?'cov':status(i)[0]}</span></div>`).join("")+`<br><h5>AFFINITY</h5>`+Object.keys(givers).map(n=>`<div>${n}: ${RANKS[affinity(n).rank]}</div>`).join("");
+}
+render();
+</script>
+</body>
+</html>
