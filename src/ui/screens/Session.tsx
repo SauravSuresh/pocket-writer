@@ -15,8 +15,8 @@ export function Session({ pid, did, sid }: { pid: string; did: string; sid: stri
   const selItem = items.find(i => i.id === sel); const issues = draftIssues(p, did).slice().sort((a, b) => severity(b, p.tagWeights) - severity(a, p.tagWeights));
   const un = items.filter(i => !i.issueIds.length).length;
   let giverSel: HTMLSelectElement | null = null, kindSel: HTMLSelectElement | null = null;
-  const add = (text: string) => { if (!text.trim() || d.frozen) return; store.update(() => { const it = addItem(p, sid, giverSel!.value, kindSel!.value as any, text); setSel(it.id); }); };
-  const chip = (id: string, itemId: string) => { const i = issues.find(x => x.id === id)!; return <span class={`issue-chip ${i.isRoot ? "root" : ""}`}>{i.isRoot ? "★ " : ""}{i.title} <a href="#" onClick={e => { e.preventDefault(); store.update(() => unlinkItem(p, itemId, id)); }} style="color:#999;text-decoration:none">×</a></span>; };
+  const add = (text: string) => { if (!text.trim() || d.frozen) return; store.update(() => { const it = addItem(p, sid, giverSel!.value, kindSel!.value as any, text); setSel(it.id); }); setDrawer(null); };
+  const chip = (id: string, itemId: string) => { const i = issues.find(x => x.id === id)!; return <span class={`issue-chip ${i.isRoot ? "root" : ""}`}>{i.isRoot ? "★ " : ""}{i.title} {!d.frozen && <a href="#" onClick={e => { e.preventDefault(); store.update(() => unlinkItem(p, itemId, id)); }} style="color:#999;text-decoration:none">×</a>}</span>; };
   return <>
     <Header title={`${p.name} · Draft ${d.number} · ${s.date}`} right={<><button class="sm" onClick={() => go(`/p/${pid}/d/${did}`)}>← draft</button><Meters p={p} draftId={did} /></>} />
     <main><div class="inbox">
@@ -32,11 +32,11 @@ export function Session({ pid, did, sid }: { pid: string; did: string; sid: stri
       <div class="panel">
         <div class="row" style="margin-bottom:12px"><button class="pri" style="font-size:15px;padding:8px 14px" disabled={d.frozen} onClick={() => setDrawer(selItem ? selItem.id : "free")}>{selItem ? COPY.inbox.newIssueFrom(p.givers.find(g => g.id === selItem.giverId)?.name ?? "them") : COPY.inbox.newIssue}</button>
           {selItem && <button disabled={d.frozen} onClick={() => setDrawer("free")}>{COPY.inbox.newFree}</button>}</div>
-        {drawer && <ExtractDrawer p={p} draftId={did} item={drawer === "free" ? undefined : selItem} onClose={() => setDrawer(null)} />}
+        {drawer && <ExtractDrawer key={drawer} p={p} draftId={did} item={drawer === "free" ? undefined : selItem} onClose={() => setDrawer(null)} />}
         {!selItem && <p class="mut">{COPY.inbox.selectHint}</p>}
         {selItem && <><div class="quote">{p.givers.find(g => g.id === selItem.giverId)?.name}: “{selItem.text}”</div>
           <h3 style="margin:8px 0 4px;font-size:14px">{COPY.inbox.link}</h3>
-          <div class="list">{issues.map(i => <label><input type="checkbox" style="width:auto" checked={selItem.issueIds.includes(i.id)} onChange={e => store.update(() => (e.target as HTMLInputElement).checked ? linkItem(p, selItem.id, i.id) : unlinkItem(p, selItem.id, i.id))} /> {i.isRoot ? "★ " : ""}{i.title} <span class="tag">{i.tags.join(", ")} · sev {severity(i, p.tagWeights)} · {status(i)}</span></label>)}</div></>}
+          <div class="list">{issues.map(i => <label><input type="checkbox" style="width:auto" disabled={d.frozen} checked={selItem.issueIds.includes(i.id)} onChange={e => store.update(() => (e.target as HTMLInputElement).checked ? linkItem(p, selItem.id, i.id) : unlinkItem(p, selItem.id, i.id))} /> {i.isRoot ? "★ " : ""}{i.title} <span class="tag">{i.tags.join(", ")} · sev {severity(i, p.tagWeights)} · {status(i)}</span></label>)}</div></>}
       </div>
     </div></main>
   </>;

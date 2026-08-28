@@ -2,7 +2,7 @@ import { useState } from "preact/hooks";
 import { FeedbackItem, Project, TAGS, SUBTAGS } from "../domain/types";
 import { store } from "./store";
 import { COPY } from "./copy";
-import { createDeeperIssue, createIssue, setCausedBy, setRoot, touch } from "../domain/account";
+import { createDeeperIssue, createIssue, linkItem, setCausedBy, setRoot, touch } from "../domain/account";
 import { skip, deeperCausePicker } from "../domain/nudges";
 import { severity } from "../domain/issue";
 import { similarTitles, reviveIssues, previousDraft } from "../domain/revive";
@@ -20,10 +20,10 @@ export function ExtractDrawer({ p, draftId, item, onClose }: { p: Project; draft
     if (n2 === "root" && tags.length && severity({ tags } as any, p.tagWeights) <= 3 && !confirm(COPY.n3(tags.join("/")) + "\n\nOK = keep as root · Cancel = go back")) return;
     store.update(() => {
       let iss;
-      if (ancestor) { iss = reviveIssues(p, previousDraft(p, draftId)!.id, draftId, [ancestor])[0]; iss.title = title.trim(); if (item) item.issueIds.push(iss.id); }
+      if (ancestor) { iss = reviveIssues(p, previousDraft(p, draftId)!.id, draftId, [ancestor])[0]; iss.title = title.trim(); if (item) linkItem(p, item.id, iss.id); }
       else iss = createIssue(p, draftId, title, item?.id);
       iss.description = desc; iss.tags = tags;
-      if (n2 === "cause" && cause === "new" && newCause.trim()) { const deep = createDeeperIssue(p, draftId, newCause, [iss.id]); void deep; }
+      if (n2 === "cause" && cause === "new") { if (newCause.trim()) createDeeperIssue(p, draftId, newCause, [iss.id]); }
       else if (n2 === "cause" && cause) setCausedBy(p, iss.id, [cause]);
       else if (n2 === "root") setRoot(p, iss.id);
       else if (n2 === "later") skip(iss, "N2");
