@@ -33,6 +33,7 @@ describe("reviveIssues", () => {
     expect(r8.pinnedNote).toBe("Draft 2 plan: would prune\nWhy not, then: depth is the point");
     expect(r5.isRoot).toBe(false); expect(r5.causedBy).toEqual([]);   // its cause "2" gone → needs re-deciding
     expect(p.issues.filter(i => i.draftId === "d3").length).toBe(3);
+    expect(badge(p, r8)).toBe("stillBothers");
   });
   it("badges derive from the ancestor", () => {
     const p = proj();
