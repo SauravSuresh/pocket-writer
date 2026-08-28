@@ -1,5 +1,5 @@
 import { Account, Draft, Issue, Project } from "./types";
-import { actionOrder, draftIssues, minions, roots } from "./graph";
+import { actionOrder, draftIssues } from "./graph";
 import { missing, status } from "./issue";
 import { grade, meters } from "./affinity";
 
@@ -17,14 +17,13 @@ export function actionPlanMarkdown(p: Project, draftId: string): string {
   const order = actionOrder(issues, p.tagWeights); const m = meters(p, draftId);
   const out: string[] = [`# ${p.name} — Draft ${d.number} action plan`, `${new Date().toISOString().slice(0, 10)} · grade ${grade(p, draftId)} · planned ${m.planned}/${m.issues} · bosses ${m.bossesCleared}/${m.roots}`, ""];
   const done = new Set<string>();
-  const body = (i: Issue) => i.coveredBy ? `Covered by ${issues.find(x => x.id === i.coveredBy)!.title}` : i.solution;
   const actionable = (i: Issue) => i.needsAction !== "no" && status(i) === "Planned";
   for (const i of order) {
     if (done.has(i.id) || !actionable(i)) continue;
     if (i.isRoot) {
       out.push(`## ${i.title}`, raisedBy(p, i) + i.solution, "");
-      for (const mn of order.filter(x => x.causedBy.includes(i.id))) { if (done.has(mn.id) || !actionable(mn)) continue; out.push(`### ${mn.title}`, raisedBy(p, mn) + body(mn), ""); done.add(mn.id); }
-    } else out.push(`### ${i.title}`, raisedBy(p, i) + body(i), "");
+      for (const mn of order.filter(x => x.causedBy.includes(i.id))) { if (done.has(mn.id) || !actionable(mn)) continue; out.push(`### ${mn.title}`, raisedBy(p, mn) + mn.solution, ""); done.add(mn.id); }
+    } else out.push(`### ${i.title}`, raisedBy(p, i) + i.solution, "");
     done.add(i.id);
   }
   const left = order.filter(i => i.needsAction === "no" && status(i) === "Planned");

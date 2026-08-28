@@ -39,6 +39,17 @@ describe("causes", () => {
   });
 });
 
+describe("deleteItem", () => {
+  it("removes the item and leaves the issue it linked untouched", () => {
+    const { p, d, g, s } = setup();
+    const it = A.addItem(p, s.id, g.id, "reaction", "Everyone is a protagonist");
+    const iss = A.createIssue(p, d.id, "Perspective", it.id);
+    A.deleteItem(p, it.id);
+    expect(p.items.find(x => x.id === it.id)).toBeUndefined();
+    expect(p.issues.find(x => x.id === iss.id)).toEqual(iss);
+  });
+});
+
 describe("suggestions and ideas", () => {
   it("adopting a suggestion appends credited text; using an idea marks it", () => {
     const { p, d, g, s } = setup();

@@ -33,7 +33,7 @@ export function DraftHome({ pid, did }: { pid: string; did: string }) {
         <div class="mut">{p.givers.map(g => g.name).join(", ") || "nobody yet"}</div>
       </div>
       <div class="card">
-        <div class="row"><b class="grow">Feedback sessions</b>{!d.frozen && <button class="sm pri" onClick={newSession}>＋ session</button>}</div>
+        <div class="row"><b class="grow">Feedback sessions</b>{!d.frozen && <button class="sm pri" disabled={p.givers.length === 0} onClick={newSession}>＋ session</button>}{!d.frozen && p.givers.length === 0 && <span class="tag">add someone to the room first</span>}</div>
         {sessions.map(s => { const items = p.items.filter(i => i.sessionId === s.id); const un = items.filter(i => !i.issueIds.length).length;
           return <div class="minion" style="cursor:pointer" onClick={() => go(`/p/${pid}/d/${did}/s/${s.id}`)}><span class="grow">{s.date} · {items.length} items</span>{un > 0 && <span class="badge">{un} {COPY.inbox.unaccounted}</span>}</div>; })}
         {!sessions.length && <div class="mut" style="margin-top:6px">{COPY.draftHome.noSessions}</div>}

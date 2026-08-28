@@ -5,7 +5,7 @@ import { Header } from "../Header";
 import { Meters } from "../Meters";
 import { COPY } from "../copy";
 import { ExtractDrawer } from "../ExtractDrawer";
-import { addItem, linkItem, unlinkItem } from "../../domain/account";
+import { addItem, deleteItem, linkItem, unlinkItem } from "../../domain/account";
 import { draftIssues } from "../../domain/graph";
 import { severity, status } from "../../domain/issue";
 export function Session({ pid, did, sid }: { pid: string; did: string; sid: string }) {
@@ -26,7 +26,7 @@ export function Session({ pid, did, sid }: { pid: string; did: string; sid: stri
           {un > 0 && <span class="badge">{un} {COPY.inbox.unaccounted}</span>}</div>
           <input style="margin-top:6px" placeholder="What did they say? Enter to add" disabled={d.frozen} onKeyDown={e => { if (e.key === "Enter") { add((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value = ""; } }} /></div>
         {items.map(it => <div class={`item ${sel === it.id ? "sel" : ""} ${it.issueIds.length ? "" : "un"}`} onClick={() => { setSel(it.id); setDrawer(null); }}>
-          <div class="row"><b>{p.givers.find(g => g.id === it.giverId)?.name}</b> <span class={`pill ${it.kind === "suggestion" ? "s" : ""}`}>{it.kind}</span>{!it.issueIds.length && <span class="tag" style="margin-left:auto;color:var(--warn)">{COPY.inbox.unaccounted}</span>}</div>
+          <div class="row"><b>{p.givers.find(g => g.id === it.giverId)?.name}</b> <span class={`pill ${it.kind === "suggestion" ? "s" : ""}`}>{it.kind}</span>{!it.issueIds.length && <span class="tag" style="margin-left:auto;color:var(--warn)">{COPY.inbox.unaccounted}</span>}{!d.frozen && <button class="sm" onClick={e => { e.stopPropagation(); if (confirm("Delete this feedback item?")) store.update(() => deleteItem(p, it.id)); }}>×</button>}</div>
           <div>{it.text}</div><div class="row" style="margin-top:4px;flex-wrap:wrap">{it.issueIds.map(id => chip(id, it.id))}</div></div>)}
       </div>
       <div class="panel">

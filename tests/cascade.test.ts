@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { cascadeQueue, answerCascade, bossCleared } from "../src/domain/cascade";
-import { status } from "../src/domain/issue";
+import { status, missing } from "../src/domain/issue";
+import { emptyIssue } from "../src/domain/types";
 import { V3 } from "./fixtures/v3";
 
 const clone = () => V3.map(i => ({ ...i, causedBy: [...i.causedBy], cascadeAnswers: {} as Record<string, "full"|"partial"|"no"> }));
@@ -24,11 +25,35 @@ describe("cascade", () => {
     expect(iss.find(i => i.id === "9")!.solution).toBe("");
     expect(iss.find(i => i.id === "10")!.cascadeAnswers["3"]).toBe("no");
   });
+  it("full then partial on the same boss clears coveredBy and drops out of Planned", () => {
+    const iss = clone(); const boss = iss.find(i => i.id === "3")!; boss.solution = "We laugh at identity.";
+    const m = iss.find(i => i.id === "9")!;
+    answerCascade(iss, "3", "9", "full");
+    expect(m.coveredBy).toBe("3"); expect(status(m)).toBe("Planned");
+    answerCascade(iss, "3", "9", "partial");
+    expect(m.coveredBy).toBeUndefined();
+    expect(status(m)).not.toBe("Planned");
+  });
   it("boss is cleared only when planned and every minion answered", () => {
     const iss = clone(); const boss = iss.find(i => i.id === "3")!;
     expect(bossCleared(iss, boss)).toBe(false);
     boss.solution = "s"; expect(bossCleared(iss, boss)).toBe(false);
     answerCascade(iss, "3", "9", "no"); answerCascade(iss, "3", "10", "full");
     expect(bossCleared(iss, boss)).toBe(true);
+  });
+  it("a fresh, un-assessed minion answered 'full' is Planned with nothing missing", () => {
+    const iss = clone();
+    const m = { ...emptyIssue("d2", "Fresh"), id: "m", description: "x", causedBy: ["3"] };
+    iss.push(m);
+    answerCascade(iss, "3", "m", "full");
+    expect(status(m)).toBe("Planned");
+    expect(missing(m)).toEqual([]);
+  });
+  it("a fresh, un-assessed minion answered 'no' stays Captured", () => {
+    const iss = clone();
+    const m = { ...emptyIssue("d2", "Fresh"), id: "m", description: "x", causedBy: ["3"] };
+    iss.push(m);
+    answerCascade(iss, "3", "m", "no");
+    expect(status(m)).toBe("Captured");
   });
 });

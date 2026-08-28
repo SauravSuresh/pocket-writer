@@ -10,6 +10,7 @@ const planned = (i: Issue) => i.solution.trim() !== "" && (i.needsAction !== "no
 
 export function status(i: Issue): Status {
   if (i.description.trim() === "") return "Raw";
+  if (i.coveredBy) return "Planned";
   if (!assessed(i)) return "Captured";
   if (!planned(i)) return "Assessed";
   return "Planned";

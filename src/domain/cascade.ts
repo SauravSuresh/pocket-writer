@@ -8,7 +8,8 @@ export function answerCascade(issues: Issue[], bossId: string, minionId: string,
   const boss = issues.find(i => i.id === bossId)!; const m = issues.find(i => i.id === minionId)!;
   m.cascadeAnswers[bossId] = answer;
   if (answer === "full") { m.solution = `Covered by “${boss.title}”`; m.coveredBy = bossId; m.partialOf = undefined; }
-  if (answer === "partial") { m.partialOf = bossId; }
+  if (answer === "partial") { m.partialOf = bossId; if (m.coveredBy === bossId) { m.coveredBy = undefined; m.solution = ""; } }
+  if (answer === "no") { if (m.coveredBy === bossId) { m.coveredBy = undefined; m.solution = ""; } if (m.partialOf === bossId) m.partialOf = undefined; }
 }
 
 export const bossCleared = (issues: Issue[], boss: Issue): boolean =>

@@ -25,7 +25,7 @@ describe("actionPlanMarkdown", () => {
   it("has a header with grade and meters", () => { expect(md).toMatch(/^# Shaji — Draft 2 action plan\n/); expect(md).toMatch(/grade [SABC] · planned \d+\/\d+ · bosses \d+\/\d+/); });
   it("renders bosses as ## with nested ### minions, quotes, and Covered by", () => {
     expect(md).toContain("## What are we laughing at in this film");
-    expect(md).toContain("### Bobbing heads\nraised by Akhil: “Tone shift abrupt”\nCovered by What are we laughing at in this film");
+    expect(md).toContain("### Bobbing heads\nraised by Akhil: “Tone shift abrupt”\nCovered by “What are we laughing at in this film”");
     expect(md).toContain("### Perspective and who is this story about\nraised by Rohan: “Everyone is a protagonist”\nStrict perspective in anecdotes.");
   });
   it("has Left alone and Unplanned sections", () => {

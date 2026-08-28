@@ -15,17 +15,22 @@ export function IssueEditor({ p, issue, onSaved, frozen, onBeforeSave }: { p: Pr
   const set = (fn: (i: Issue) => void) => { if (frozen) return; store.update(() => { fn(issue); touch(p, issue); }); };
   const suggestions = p.items.filter(it => it.kind === "suggestion" && it.issueIds.includes(issue.id));
   const ideas = p.ideas.filter(i => i.issueIds.includes(issue.id));
-  const save = () => { if (!draft.trim()) return; const before = onBeforeSave?.() ?? {}; set(i => { i.solution = draft.trim(); }); onSaved(issue.isRoot ? "boss" : "symptom", before); };
+  const save = () => { if (!draft.trim()) return; const before = onBeforeSave?.() ?? {}; set(i => {
+    i.solution = draft.trim();
+    if (i.coveredBy && i.solution !== `Covered by “${issues.find(x => x.id === i.coveredBy)?.title}”`) i.coveredBy = undefined;
+    if (i.partialOf) i.partialOf = undefined;
+  }); onSaved(issue.isRoot ? "boss" : "symptom", before); };
   return <div>
     <div class="row" style="margin-bottom:6px;flex-wrap:wrap"><span class={`st ${st}`}>{st}</span><span class="lvl">Lv {severity(issue, p.tagWeights)}</span>
       {b && <span class="badge-rev">{COPY.badges[b]}</span>}
       {issue.partialOf && <span class="tag">· winged by “{issues.find(x => x.id === issue.partialOf)?.title}”</span>}</div>
     {issue.pinnedNote && <div class="pinned">{issue.pinnedNote}</div>}
+    <input value={issue.title} disabled={frozen} onInput={e => set(i => { i.title = (e.target as HTMLInputElement).value; })} style="font-weight:600;font-size:18px;margin-bottom:6px" />
     <textarea disabled={frozen} placeholder={COPY.placeholder.descriptionFor("them")} value={issue.description} onInput={e => set(i => { i.description = (e.target as HTMLTextAreaElement).value; })} style="min-height:60px" />
     <div class="row" style="margin:6px 0;flex-wrap:wrap">{[...TAGS, ...SUBTAGS].map(t => <label class="tag"><input disabled={frozen} type="checkbox" style="width:auto" checked={issue.tags.includes(t)} onChange={() => set(i => { i.tags = i.tags.includes(t) ? i.tags.filter(x => x !== t) : [...i.tags, t]; })} /> {t}</label>)}</div>
     <div class="row" style="flex-wrap:wrap;gap:12px">
       <label class="tag"><input disabled={frozen} type="radio" style="width:auto" checked={issue.isRoot} onChange={() => set(i => { setRoot(p, i.id); })} /> root</label>
-      <label class="tag">symptom of <select disabled={frozen} style="width:auto" value="" onChange={e => { const v = (e.target as HTMLSelectElement).value; if (!v) return; store.update(() => { const r = setCausedBy(p, issue.id, [...issue.causedBy, v]); if (r.refused) { const other = issues.find(x => x.id === r.refused)!; if (confirm(`“${other.title}” is already caused by this one. Flip it — make “${issue.title}” the cause?`)) { setCausedBy(p, other.id, other.causedBy.filter(c => c !== issue.id)); setCausedBy(p, issue.id, [...issue.causedBy, v]); } } }); }}>
+      <label class="tag">symptom of <select disabled={frozen} style="width:auto" value="" onChange={e => { const v = (e.target as HTMLSelectElement).value; if (!v) return; store.update(() => { const r = setCausedBy(p, issue.id, [...issue.causedBy, v]); if (r.refused) { const other = issues.find(x => x.id === r.refused)!; if (other.causedBy.includes(issue.id)) { if (confirm(`“${other.title}” is already caused by this one. Flip it — make “${issue.title}” the cause?`)) { setCausedBy(p, other.id, other.causedBy.filter(c => c !== issue.id)); const r2 = setCausedBy(p, issue.id, [...issue.causedBy, v]); if (r2.refused) alert(`Can't: flipping would still create a cycle.`); } } else { alert(`Can't: “${other.title}” already leads back to this issue through another link. Remove that link first.`); } } }); }}>
         <option value="">add…</option>{deeperCausePicker(p, issue.draftId, issue.id).map(c => <option value={c.id}>{c.isRoot ? "★ " : ""}{c.title}</option>)}</select></label>
       {issue.causedBy.map(c => <span class="issue-chip">{issues.find(x => x.id === c)?.title} {!frozen && <a href="#" onClick={e => { e.preventDefault(); set(i => { setCausedBy(p, i.id, i.causedBy.filter(x => x !== c)); }); }}>×</a>}</span>)}
       <label class="tag">needs action <select disabled={frozen} style="width:auto" value={issue.needsAction} onChange={e => set(i => { i.needsAction = (e.target as HTMLSelectElement).value as any; })}><option value="undecided">undecided</option><option value="yes">yes</option><option value="no">no</option></select></label>

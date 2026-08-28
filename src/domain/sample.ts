@@ -43,7 +43,7 @@ export function installSample(acc: Account): Project {
   add(meera, "reaction", "Tea shop scene — any two people could say those lines.", m6);
   add(meera, "reaction", "I don't know what this film is.");   // deliberately unaccounted
 
-  // Boss 1 planned + cascade partly answered → Dev is well along; Appu untouched; Meera capped by the unaccounted item.
+  // Boss 1 planned + cascade partly answered → Dev is well along; Appu holds the m5 items and is Unconvinced; Meera is Watching, capped by the unaccounted item.
   answerCascade(p.issues, bossTone.id, m1.id, "full");
   answerCascade(p.issues, bossTone.id, m2.id, "no");
   A.addIdea(p, "The lighter is Rithu's father's. Nobody has said so yet.", m4.id);

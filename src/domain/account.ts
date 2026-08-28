@@ -30,6 +30,7 @@ export function createIssue(p: Project, draftId: string, title: string, fromItem
 }
 export function linkItem(p: Project, itemId: string, issueId: string): void { const it = find(p.items, itemId); if (!it.issueIds.includes(issueId)) it.issueIds.push(issueId); }
 export function unlinkItem(p: Project, itemId: string, issueId: string): void { const it = find(p.items, itemId); it.issueIds = it.issueIds.filter(x => x !== issueId); }
+export function deleteItem(p: Project, itemId: string): void { p.items = p.items.filter(i => i.id !== itemId); }
 
 export function setCausedBy(p: Project, issueId: string, causeIds: string[]): { refused?: string } {
   const i = find(p.issues, issueId); const issues = draftIssues(p, i.draftId);

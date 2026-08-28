@@ -49,7 +49,6 @@ export function Campaign({ pid, did }: { pid: string; did: string }) {
           {!d.frozen && <button class="sm" style="margin-top:8px" onClick={() => { const t = prompt("Issue title?"); if (t?.trim()) store.update(() => { const n = createIssue(p, did, t); setSel(n.id); }); }}>＋ issue</button>}</div>
         <div class="focus">
           <div class="tag">{i.isRoot ? COPY.encounter.boss : COPY.encounter.minion} · #{idx + 1} of {order.length}{i.isRoot && ` · ${COPY.encounter.minionsBehind(minions(issues, i.id).length)}`}</div>
-          <h2>{i.title}</h2>
           <IssueEditor key={i.id} p={p} issue={i} onSaved={onSaved} frozen={d.frozen} onBeforeSave={snapshotRanks} />
           <div class="row" style="margin-top:14px"><span class="mut grow" style="font-size:13px">{next ? COPY.encounter.upNext(next.title) : COPY.encounter.nothingLeft}</span>
             {next ? <button onClick={() => setSel(next.id)}>{COPY.encounter.next}</button> : !d.frozen && <button class="pri" onClick={() => { store.update(() => endTurn(p, did)); go(`/p/${pid}/d/${did}/summary`); }}>{COPY.encounter.endTurn}</button>}</div>
