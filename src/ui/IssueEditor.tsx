@@ -15,11 +15,18 @@ export function IssueEditor({ p, issue, onSaved, frozen, onBeforeSave }: { p: Pr
   const set = (fn: (i: Issue) => void) => { if (frozen) return; store.update(() => { fn(issue); touch(p, issue); }); };
   const suggestions = p.items.filter(it => it.kind === "suggestion" && it.issueIds.includes(issue.id));
   const ideas = p.ideas.filter(i => i.issueIds.includes(issue.id));
-  const save = () => { if (!draft.trim()) return alert("Write a plan first."); const before = onBeforeSave?.() ?? {}; set(i => {
-    i.solution = draft.trim();
-    if (i.coveredBy && i.solution !== `Covered by “${issues.find(x => x.id === i.coveredBy)?.title}”`) i.coveredBy = undefined;
-    if (i.partialOf) i.partialOf = undefined;
-  }); onSaved(issue.isRoot ? "boss" : "symptom", before); };
+  const save = () => {
+    if (!draft.trim()) return alert("Write a plan first.");
+    const before = onBeforeSave?.() ?? {};
+    set(i => {
+      i.solution = draft.trim();
+      if (i.coveredBy && i.solution !== `Covered by “${issues.find(x => x.id === i.coveredBy)?.title}”`) i.coveredBy = undefined;
+      if (i.partialOf) i.partialOf = undefined;
+    });
+    const stillMissing = missing(issue);
+    if (stillMissing.length) return alert(`Not planned yet — still need: ${stillMissing.map(m => COPY.missing[m]).join(" · ")}`);
+    onSaved(issue.isRoot ? "boss" : "symptom", before);
+  };
   return <div>
     <div class="row" style="margin-bottom:6px;flex-wrap:wrap"><span class={`st ${st}`}>{st}</span><span class="lvl">Lv {severity(issue, p.tagWeights)}</span>
       {b && <span class="badge-rev">{COPY.badges[b]}</span>}
