@@ -34,7 +34,7 @@ describe("actionPlanMarkdown", () => {
   });
   it("filenames", () => {
     expect(actionPlanFilename(proj(), proj().drafts[0])).toBe("shaji-draft2-action-plan.md");
-    expect(backupFilename(new Date("2026-08-28T10:00:00Z"))).toBe("gagan-achari-backup-2026-08-28.json");
+    expect(backupFilename(new Date("2026-08-28T10:00:00Z"))).toBe("pocket-writer-backup-2026-08-28.json");
   });
 });
 

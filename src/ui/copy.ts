@@ -10,7 +10,7 @@ export const MOODS: Record<number, string[]> = {
 export const mood = (rank: number, seed: number) => MOODS[rank][seed % MOODS[rank].length];
 export const rankName = (r: number) => RANKS[r];
 export const COPY = {
-  app: "Gagan Achari",
+  app: "Pocket Writer",
   missing: { description: "What in the screenplay causes this? Write it.", tags: "Tag it.", cause: "Root or symptom? Decide.", needsAction: "Fixing it or not? Decide.", canBeAddressed: "Can it even be fixed? One line.", solution: "Unarmed. Write a plan.", reasonNotActing: "You're not fixing it. Say why.", whyDiverges: "Imagine you did fix it. What does the film lose?" } as Record<string, string>,
   placeholder: { descriptionFor: (g: string) => `What in the screenplay makes ${g} say this?`, descriptionFree: "What in the screenplay is the problem?", solution: "What will you change in the next draft?", wouldSolution: "What would you do if you did fix it?", whyDiverges: "Imagine you did fix it. What does the film lose?" },
   n2: { title: "Could this be a symptom of something deeper?", cause: "Yes — caused by", newDeeper: "+ new deeper issue…", root: "No — this is a root", later: "Decide later", laterNote: "(counts as a skipped nudge)" },

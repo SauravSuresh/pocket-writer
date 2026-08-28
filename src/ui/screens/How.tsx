@@ -3,7 +3,7 @@ import { Header } from "../Header";
 import { go } from "../router";
 export function How() {
   return <><Header title="How this works" /><main style="max-width:680px;font-size:16px;line-height:1.6">
-    <h2>Gagan Achari</h2>
+    <h2>Pocket Writer</h2>
     <p>You wrote a draft. People read it. They said things. Some of it was smart, some of it was stupid, all of it is valid. Your job is not to argue — it's to find out what in the screenplay made them say it.</p>
     <ol>
       <li><b>Every opinion is valid.</b> Log it. Even the dumb one.</li>

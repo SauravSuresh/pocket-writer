@@ -5,7 +5,7 @@ import { grade, meters } from "./affinity";
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 export const actionPlanFilename = (p: Project, d: Draft) => `${slug(p.name)}-draft${d.number}-action-plan.md`;
-export const backupFilename = (date: Date) => `gagan-achari-backup-${date.toISOString().slice(0, 10)}.json`;
+export const backupFilename = (date: Date) => `pocket-writer-backup-${date.toISOString().slice(0, 10)}.json`;
 
 function raisedBy(p: Project, i: Issue): string {
   const quotes = p.items.filter(it => it.issueIds.includes(i.id)).map(it => `${p.givers.find(g => g.id === it.giverId)?.name ?? "?"}: “${it.text}”`);
@@ -58,7 +58,7 @@ export function obsidianFiles(p: Project): { path: string; content: string }[] {
 export const serializeBackup = (a: Account) => JSON.stringify({ schemaVersion: a.schemaVersion, exportedAt: new Date().toISOString(), account: a }, null, 2);
 export function parseBackup(text: string): Account {
   const j = JSON.parse(text);
-  if (j?.schemaVersion !== 1 || !j.account || !Array.isArray(j.account.projects)) throw new Error("Not a Gagan Achari backup (schema 1)");
+  if (j?.schemaVersion !== 1 || !j.account || !Array.isArray(j.account.projects)) throw new Error("Not a Pocket Writer backup (schema 1)");
   return j.account as Account;
 }
 export const backupCounts = (a: Account) => ({ projects: a.projects.length, issues: a.projects.reduce((n, p) => n + p.issues.length, 0), items: a.projects.reduce((n, p) => n + p.items.length, 0) });

@@ -1,7 +1,7 @@
 import { openDB } from "idb";
 import { Account, emptyAccount } from "../domain/types";
 
-const DB = "gagan-achari", STORE = "kv", KEY = "account";
+const DB = "pocket-writer", STORE = "kv", KEY = "account";
 const db = () => openDB(DB, 1, { upgrade(d) { d.createObjectStore(STORE); } });
 
 export async function loadAccount(): Promise<Account> {
