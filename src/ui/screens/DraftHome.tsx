@@ -1,12 +1,16 @@
+import { useState } from "preact/hooks";
 import { store, useStore } from "../store";
 import { go } from "../router";
 import { Header } from "../Header";
 import { Meters } from "../Meters";
 import { COPY } from "../copy";
+import { RevivePicker } from "../RevivePicker";
 import { addGiver, createSession, endTurn, reopenDraft, startDraft } from "../../domain/account";
+import { previousDraft } from "../../domain/revive";
 export function DraftHome({ pid, did }: { pid: string; did: string }) {
   const acc = useStore(); const p = acc.projects.find(x => x.id === pid)!; const d = p.drafts.find(x => x.id === did)!;
   const sessions = p.sessions.filter(s => s.draftId === did);
+  const [revive, setRevive] = useState(false);
   const newSession = () => {
     const date = prompt("Session date (YYYY-MM-DD)?", new Date().toISOString().slice(0, 10)); if (!date) return;
     store.update(() => { const s = createSession(p, did, date, p.givers.map(g => g.id)); go(`/p/${pid}/d/${did}/s/${s.id}`); });
@@ -18,6 +22,7 @@ export function DraftHome({ pid, did }: { pid: string; did: string }) {
         <select onChange={e => go(`/p/${pid}/d/${(e.target as HTMLSelectElement).value}`)}>{p.drafts.map(x => <option value={x.id} selected={x.id === did}>Draft {x.number}{x.frozen ? " · frozen" : ""}</option>)}</select>
         <button onClick={() => go(`/p/${pid}/d/${did}/campaign`)}>⚔️ Campaign</button>
         <button onClick={() => go(`/p/${pid}/ideas`)}>💡 Ideas</button>
+        {!d.frozen && previousDraft(p, did) && <button onClick={() => setRevive(true)}>⏮ Pull from previous draft</button>}
         <span class="grow" />
         {!d.frozen && <button class="pri" onClick={() => { store.update(() => endTurn(p, did)); go(`/p/${pid}/d/${did}/summary`); }}>{COPY.encounter.endTurn}</button>}
         {d.frozen && <button onClick={() => store.update(() => reopenDraft(p, did))}>{COPY.summary.reopen}</button>}
@@ -34,5 +39,6 @@ export function DraftHome({ pid, did }: { pid: string; did: string }) {
         {!sessions.length && <div class="mut" style="margin-top:6px">{COPY.draftHome.noSessions}</div>}
       </div>
     </main>
+    {revive && <RevivePicker p={p} draftId={did} onClose={() => setRevive(false)} />}
   </>;
 }
