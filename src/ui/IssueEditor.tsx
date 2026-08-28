@@ -8,14 +8,14 @@ import { pendingNudges, skip, deeperCausePicker } from "../domain/nudges";
 import { minions } from "../domain/graph";
 import { adoptSuggestion, addIdea, setCausedBy, setRoot, touch, useIdea } from "../domain/account";
 
-export function IssueEditor({ p, issue, onSaved, frozen }: { p: Project; issue: Issue; onSaved: (kind: "boss" | "symptom") => void; frozen: boolean }) {
+export function IssueEditor({ p, issue, onSaved, frozen, onBeforeSave }: { p: Project; issue: Issue; onSaved: (kind: "boss" | "symptom", before: Record<string, number>) => void; frozen: boolean; onBeforeSave?: () => Record<string, number> }) {
   const [draft, setDraft] = useState(issue.solution);
   const issues = p.issues.filter(i => i.draftId === issue.draftId);
   const st = status(issue); const miss = missing(issue); const b = badge(p, issue); const nudges = pendingNudges(p, issue.draftId, issue);
   const set = (fn: (i: Issue) => void) => { if (frozen) return; store.update(() => { fn(issue); touch(p, issue); }); };
   const suggestions = p.items.filter(it => it.kind === "suggestion" && it.issueIds.includes(issue.id));
   const ideas = p.ideas.filter(i => i.issueIds.includes(issue.id));
-  const save = () => { if (!draft.trim()) return; set(i => { i.solution = draft.trim(); }); onSaved(issue.isRoot ? "boss" : "symptom"); };
+  const save = () => { if (!draft.trim()) return; const before = onBeforeSave?.() ?? {}; set(i => { i.solution = draft.trim(); }); onSaved(issue.isRoot ? "boss" : "symptom", before); };
   return <div>
     <div class="row" style="margin-bottom:6px;flex-wrap:wrap"><span class={`st ${st}`}>{st}</span><span class="lvl">Lv {severity(issue, p.tagWeights)}</span>
       {b && <span class="badge-rev">{COPY.badges[b]}</span>}
