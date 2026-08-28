@@ -13,16 +13,17 @@ export function Tour() {
   const acc = store.acc;
   const p = acc.projects.find(x => x.isSample);
   const d = p?.drafts[0];
-  const s = p && p.sessions.find(x => x.draftId === d!.id);
+  const s = p && d ? p.sessions.find(x => x.draftId === d.id) : undefined;
   const [i, setI] = useState(0);
   const active = !!(p && d && s) && !acc.settings.tourDone;
-  const path = active ? STEPS(p!.id, d!.id, s!.id)[i]?.path : undefined;
+  const steps = active ? STEPS(p!.id, d!.id, s!.id) : [];
+  const path = steps[i]?.path;
   useEffect(() => {
     if (!active || !path) return;
     if (location.hash !== "#" + path) go(path);
   }, [i, active, path]);
   if (!active) return null;
-  const steps = STEPS(p!.id, d!.id, s!.id); const step = steps[i];
+  const step = steps[i];
   const done = () => store.update(a => { a.settings.tourDone = true; });
   const next = () => {
     if (i + 1 >= steps.length) { done(); if (!acc.settings.seenHowItWorks) go("/how"); else go("/"); return; }
