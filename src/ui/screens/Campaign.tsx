@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { store, useStore } from "../store";
 import { go } from "../router";
 import { Header } from "../Header";
@@ -16,10 +16,11 @@ import { affinity } from "../../domain/affinity";
 import { cascadeQueue } from "../../domain/cascade";
 import { giverPatternNudges } from "../../domain/nudges";
 import { GiverPanel } from "../GiverPanel";
-export function Campaign({ pid, did }: { pid: string; did: string }) {
+export function Campaign({ pid, did, iid }: { pid: string; did: string; iid?: string }) {
   const acc = useStore(); const p = acc.projects.find(x => x.id === pid)!; const d = p.drafts.find(x => x.id === did)!;
   const issues = draftIssues(p, did); const order = actionOrder(issues, p.tagWeights);
-  const [sel, setSel] = useState<string | null>(order[0]?.id ?? null); const [giver, setGiver] = useState<string | null>(null);
+  const [sel, setSel] = useState<string | null>(iid ?? order[0]?.id ?? null); const [giver, setGiver] = useState<string | null>(null);
+  useEffect(() => { if (iid) setSel(iid); }, [iid]);
   const i = order.find(x => x.id === sel) ?? order[0]; const idx = order.findIndex(x => x === i);
   const next = order.slice(idx + 1).find(x => status(x) !== "Planned") ?? order.find(x => status(x) !== "Planned");
   const [cascade, setCascade] = useState<string | null>(null);

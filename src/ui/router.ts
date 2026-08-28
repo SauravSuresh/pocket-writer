@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from "preact/hooks";
-export interface Route { name: string; pid?: string; did?: string; sid?: string }
+export interface Route { name: string; pid?: string; did?: string; sid?: string; iid?: string }
 export function route(): Route {
   const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   if (!parts.length) return { name: "projects" };
@@ -11,7 +11,7 @@ export function route(): Route {
     if (parts[2] === "d") {
       const did = parts[3];
       if (parts[4] === "s") return { name: "session", pid, did, sid: parts[5] };
-      if (parts[4] === "campaign") return { name: "campaign", pid, did };
+      if (parts[4] === "campaign") return { name: "campaign", pid, did, iid: parts[5] };
       if (parts[4] === "summary") return { name: "summary", pid, did };
       return { name: "draft", pid, did };
     }

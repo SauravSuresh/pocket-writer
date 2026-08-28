@@ -24,7 +24,7 @@ export function App() {
     switch (r.name) {
       case "draft": return <DraftHome pid={r.pid!} did={r.did!} />;
       case "session": return <Session pid={r.pid!} did={r.did!} sid={r.sid!} />;
-      case "campaign": return <Campaign pid={r.pid!} did={r.did!} />;
+      case "campaign": return <Campaign pid={r.pid!} did={r.did!} iid={r.iid} />;
       case "ideas": return <Ideas pid={r.pid!} />;
       case "summary": return <Summary pid={r.pid!} did={r.did!} />;
       case "settings": return <Settings />;
