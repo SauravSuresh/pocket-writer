@@ -6,6 +6,9 @@ import { DraftHome } from "./screens/DraftHome";
 import { Session } from "./screens/Session";
 import { Campaign } from "./screens/Campaign";
 import { Ideas } from "./screens/Ideas";
+import { Summary } from "./screens/Summary";
+import { Settings } from "./screens/Settings";
+import { Nag } from "./Nag";
 export function App() {
   useStore(); const r = useRoute();
   useEffect(() => { void store.init(); }, []);
@@ -15,11 +18,16 @@ export function App() {
   const d = p && r.did ? p.drafts.find(x => x.id === r.did) : undefined;
   const s = p && r.sid ? p.sessions.find(x => x.id === r.sid) : undefined;
   if ((r.pid && !p) || (r.did && !d) || (r.sid && !s)) { go("/"); return null; }
-  switch (r.name) {
-    case "draft": return <DraftHome pid={r.pid!} did={r.did!} />;
-    case "session": return <Session pid={r.pid!} did={r.did!} sid={r.sid!} />;
-    case "campaign": return <Campaign pid={r.pid!} did={r.did!} />;
-    case "ideas": return <Ideas pid={r.pid!} />;
-    default: return <Projects />;
-  }
+  const screen = (() => {
+    switch (r.name) {
+      case "draft": return <DraftHome pid={r.pid!} did={r.did!} />;
+      case "session": return <Session pid={r.pid!} did={r.did!} sid={r.sid!} />;
+      case "campaign": return <Campaign pid={r.pid!} did={r.did!} />;
+      case "ideas": return <Ideas pid={r.pid!} />;
+      case "summary": return <Summary pid={r.pid!} did={r.did!} />;
+      case "settings": return <Settings />;
+      default: return <Projects />;
+    }
+  })();
+  return <><Nag />{screen}</>;
 }
