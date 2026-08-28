@@ -3,6 +3,7 @@ import { store, useStore } from "./store";
 import { useRoute, go } from "./router";
 import { Projects } from "./screens/Projects";
 import { DraftHome } from "./screens/DraftHome";
+import { Session } from "./screens/Session";
 export function App() {
   useStore(); const r = useRoute();
   useEffect(() => { void store.init(); }, []);
@@ -14,6 +15,7 @@ export function App() {
   if ((r.pid && !p) || (r.did && !d) || (r.sid && !s)) { go("/"); return null; }
   switch (r.name) {
     case "draft": return <DraftHome pid={r.pid!} did={r.did!} />;
+    case "session": return <Session pid={r.pid!} did={r.did!} sid={r.sid!} />;
     default: return <Projects />;
   }
 }
